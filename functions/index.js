@@ -9,11 +9,14 @@ initializeApp();
 const android = require('./android');
 const legacy = require('./legacy');
 
-const region = (functions.config().app && functions.config().app.region) || 'us-central1';
+// functions.config() was removed in firebase-functions v7, so the region is read from the
+// environment. The CLI does not expose functions/.env to the deploy-time source analysis,
+// so this default is what decides where the functions are deployed.
+const region = process.env.REGION || 'europe-west1';
 const regionalFunctions = functions.region(region).runWith({ timeoutSeconds: 10 });
 
 // These must be imported before the handlers to ensure they are initialized correctly
-process.env.DEBUG = isDebug().toString();
+process.env.DEBUG = (process.env.DEBUG === 'true').toString();
 process.env.REGION = region;
 
 const { handleRequest, handleCheckRateLimits } = require('./handlers');
@@ -29,14 +32,6 @@ exports.sendPushNotification = regionalFunctions.https.onRequest(async (req, res
 exports.checkRateLimits = regionalFunctions.https.onRequest(async (req, res) =>
   handleCheckRateLimits(req, res),
 );
-
-function isDebug() {
-  let conf = functions.config();
-  if (conf.debug) {
-    return conf.debug.local === 'true';
-  }
-  return false;
-}
 
 exports.handleRequest = handleRequest;
 exports.handleCheckRateLimits = handleCheckRateLimits;
