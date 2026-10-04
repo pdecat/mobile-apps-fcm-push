@@ -91,6 +91,7 @@ module.exports = {
         'high_accuracy_update_interval',
         'package_name',
         'tts_text',
+        'tts_language',
         'media_stream',
         'command',
         'intent_package_name',
